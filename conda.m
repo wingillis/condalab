@@ -1,15 +1,15 @@
 % conda.m
 % a simple MATLAB utility to control conda
 % environments on *nix systems
-% 
+%
 % usage
 %
 % MATLAB 			   Shell
 % ===================================
 % conda.getenv         conda env list
 % conda.setenv(env)    source activate env
-% 
-% Srinivas Gorur-Shandilya 
+%
+% Srinivas Gorur-Shandilya
 
 classdef conda
 
@@ -53,7 +53,7 @@ methods (Static)
 
 		end
 
-		if nargout 
+		if nargout
 			varargout{1} = env_names;
 			varargout{2} = env_paths;
 			varargout{3} = active_path;
@@ -105,34 +105,33 @@ methods (Static)
 	end % setenv
 
 	% this function makes sure that MATLAB knows about
-	% the base Anaconda install, 
+	% the base Anaconda install,
 	% and that "conda" can be found on the path
 	function addBaseCondaPath
 		p = getenv('PATH');
-		[~,home_path] = system('cd ~; pwd');
-		% one of these should work
-		all_paths = {};
-		all_paths{1} = strrep('~/anaconda/bin','~',strtrim(home_path));
-		all_paths{2} = strrep('~/anaconda3/bin','~',strtrim(home_path));
-		all_paths{3} = '/anaconda/bin';
-		all_paths{4} = '/anaconda3/bin';
-
-		ok = false;
-		for i = 1:length(all_paths)
-			if exist(all_paths{i})
-				ok = true;
-				break
-			end
+		home_path = getenv('HOME');
+		folders = dir(fullfile(home_path, '*conda*'));
+		% filter for only folders
+		folders = folders([folders.isdir]);
+		% filter for non dot-folders
+		folders = folders(~startsWith({folders.name}, '.'));
+		if numel(folders) == 0
+			% try base path
+			folders = dir('/*conda*');
+			folders = folders([folders.isdir]);
+			folders = folders(~startsWith({folders.name}, '.'));
 		end
 
-		if ~ok
+
+
+		if numel(folders) == 0
 			error('Could not find any anaconda folder.')
 		end
 
 
 		if isempty(strfind(p,'anaconda'))
 			% no anaconda at all on path
-		    p = [all_paths{i} pathsep p];
+		    p = [fullfile(folders(1).folder, folders(1).name, 'bin') pathsep p];
 		    setenv('PATH', p);
 		else
 			% it's all good, stop
@@ -140,7 +139,7 @@ methods (Static)
 		end
 
 	end
-	
+
 
 end
 
