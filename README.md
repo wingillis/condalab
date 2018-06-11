@@ -4,7 +4,15 @@ Handy MATLAB utility to switch between conda environments **from within MATLAB**
 
 ## Installation
 
-Grab this repo. Chuck it somewhere on your path
+Grab this repo
+```
+git clone https://github.com/wingillis/condalab
+```
+Chuck it somewhere on your matlab path:
+```matlab
+% add the full path for condalab: for me it's:
+addpath(genpath('/Users/wgillis/dev/condalab'));
+```
 
 ## Usage
 
@@ -18,10 +26,8 @@ asimov     /Users/sg-s/anaconda3/envs/asimov
 mctsne     /Users/sg-s/anaconda3/envs/mctsne
 *tensorflow     /Users/sg-s/anaconda3/envs/tensorflow
 root     /Users/sg-s/anaconda3
-
 ```
-
-and the `*` indicates the currently active environment
+the `*` indicates the currently active environment
 
 To switch between environments (i.e., `source activate env`)
 
@@ -30,4 +36,4 @@ conda.setenv('env_name')
 
 ```
 
-It's that simple. Enjoy. 
+It's that simple. Enjoy.

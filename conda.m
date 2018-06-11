@@ -24,57 +24,36 @@ end
 methods (Static)
 
 	function varargout = getenv()
-		conda.addBaseCondaPath;
-		[~,envs] = system(['conda env list']);
-		envs = strsplit(envs,'\n');
+		exe = conda.getCondaExe();
+		[~, envs] = system([exe ' env list']);
+		envs = strrep(envs, '*', ' ');
+		envs = strsplit(envs, '\n');
+		envs = regexprep(envs, '^#.*', '');
+		envs = envs(~cellfun(@isempty, envs));
 
-		p = strsplit(getenv('PATH'),pathsep);
+		p = strsplit(getenv('PATH'), pathsep);
 
-		% remove the asterix because it always is on root
-		for i = length(envs):-1:1
-			envs{i} = strrep(envs{i},'*',' ');
-			if isempty(envs{i})
-				continue
-			end
-			if strcmp(envs{i}(1),'#')
-				continue
-			end
-
-			this_env = strsplit(envs{i});
-			env_names{i} = this_env{1};
-			env_paths{i} = this_env{2};
-
-			for j = 1:length(env_paths)
-				this_env_path = [env_paths{j} '/bin'];
-				if any(strcmp(this_env_path,p))
-					active_path = j;
-				end
-			end
-
-		end
+		env_bin = cellfun(@(x) fullfile(x, 'bin'), envs, 'uniformoutput', false);
+		env_bin = cellfun(@(x) strsplit(x), env_bin, 'uniformoutput', false);
+		active_path = find(cellfun(@(x) any(strcmp(x{2}, p)), env_bin));
+		env_bin = vertcat(env_bin{:});
 
 		if nargout
-			varargout{1} = env_names;
-			varargout{2} = env_paths;
+			varargout{1} = env_bin{:, 1}; % env name
+			varargout{2} = env_bin{:, 2}; % env path
 			varargout{3} = active_path;
 		else
-			fprintf('\n')
-			for i = 1:length(env_names)
-				if isempty(env_names{i})
-					continue
-				end
-				if active_path == i
-					disp(['*' env_names{i} '     ' env_paths{i}])
-				else
-					disp([env_names{i} '     ' env_paths{i}])
-				end
+			fprintf('\n');
+			env_bin{active_path, 1} = ['*' env_bin{active_path, 1}];
+			for i=1:size(env_bin, 1)
+				fprintf('%s\t\t%s\n', env_bin{i, 1}, env_bin{i, 2});
 			end
 		end
 	end % end getenv
 
 	function setenv(env)
-		conda.addBaseCondaPath;
-		[~,envs] = system(['conda env list']);
+		exe = conda.getCondaExe();
+		[~, envs] = system([exe ' env list']);
 		envs = strsplit(envs,'\n');
 
 		[env_names, env_paths] = conda.getenv;
@@ -109,6 +88,10 @@ methods (Static)
 	% and that "conda" can be found on the path
 	function addBaseCondaPath
 		p = getenv('PATH');
+		if contains(p, 'conda')
+			disp('conda path already added')
+			return
+		end
 		home_path = getenv('HOME');
 		folders = dir(fullfile(home_path, '*conda*'));
 		% filter for only folders
@@ -122,27 +105,22 @@ methods (Static)
 			folders = folders(~startsWith({folders.name}, '.'));
 		end
 
-
-
 		if numel(folders) == 0
 			error('Could not find any anaconda folder.')
 		end
 
+    p = [fullfile(folders(1).folder, folders(1).name, 'bin') pathsep p];
+    setenv('PATH', p);
 
-		if isempty(strfind(p,'anaconda'))
-			% no anaconda at all on path
-		    p = [fullfile(folders(1).folder, folders(1).name, 'bin') pathsep p];
-		    setenv('PATH', p);
-		else
-			% it's all good, stop
-			return
-		end
+	end
 
+	function exe=getCondaExe()
+		condas = dir(fullfile(getenv('HOME'), '*conda*'));
+		condas = condas(~startsWith({condas.name}, '.'));
+		exe = fullfile(condas(1).folder, condas(1).name, 'bin', 'conda');
 	end
 
 
 end
-
-
 
 end % end classdef
