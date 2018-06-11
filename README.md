@@ -6,7 +6,7 @@ Handy MATLAB utility to switch between conda environments **from within MATLAB**
 
 Grab this repo
 ```
-git clone https://github.com/wingillis/condalab
+git clone https://github.com/wingillis/condalab.git
 ```
 Chuck it somewhere on your matlab path:
 ```matlab
