@@ -93,7 +93,11 @@ methods (Static)
 		if contains(p, 'conda')
 			return
 		end
-		home_path = getenv('HOME');
+		if ispc()
+			home_path = getenv('HOMEPATH');
+		else
+			home_path = getenv('HOME');
+		end
 		folders = dir(fullfile(home_path, '*conda*'));
 		% filter for only folders
 		folders = folders([folders.isdir]);
@@ -115,10 +119,18 @@ methods (Static)
 	end
 
 	function exe=getCondaExe()
-		condas = dir(fullfile(getenv('HOME'), '*conda*'));
+		if ispc()
+			home_path = getenv('HOMEPATH');
+		else
+			home_path = getenv('HOME');
+		end
+		condas = dir(fullfile(home_path, '*conda*'));
 		condas = condas(~startsWith({condas.name}, '.'));
-
-		exe = fullfile(condas(1).folder, condas(1).name, 'bin', 'conda');
+		if ispc()
+			exe = fullfile(condas(1).folder, condas(1).name, 'Library', 'bin', 'conda');
+		else
+			exe = fullfile(condas(1).folder, condas(1).name, 'bin', 'conda');
+		end
 	end
 
 
