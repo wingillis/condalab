@@ -2,6 +2,8 @@
 
 Handy MATLAB utility to switch between conda environments **from within MATLAB**
 
+**NEW**: now works with Windows and Miniconda!
+
 ## Installation
 
 Grab this repo
