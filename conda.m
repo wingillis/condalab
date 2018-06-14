@@ -33,7 +33,11 @@ methods (Static)
 
 		p = strsplit(getenv('PATH'), pathsep);
 
-		env_bin = cellfun(@(x) fullfile(x, 'bin'), envs, 'uniformoutput', false);
+		if ispc()
+			env_bin = envs;
+		else
+			env_bin = cellfun(@(x) fullfile(x, 'bin'), envs, 'uniformoutput', false);
+		end
 		env_bin = cellfun(@(x) strsplit(x), env_bin, 'uniformoutput', false);
 		active_path = find(cellfun(@(x) any(strcmp(x{2}, p)), env_bin));
 		if isempty(active_path)
@@ -113,8 +117,13 @@ methods (Static)
 		if numel(folders) == 0
 			error('Could not find any anaconda folder.')
 		end
-    p = [fullfile(folders(1).folder, folders(1).name, 'bin') pathsep p];
-    setenv('PATH', p);
+
+		if ispc()
+			p = [fullfile(folders(1).folder, folders(1).name) pathsep p];
+		else
+			p = [fullfile(folders(1).folder, folders(1).name, 'bin') pathsep p];
+		end
+   		setenv('PATH', p);
 
 	end
 
